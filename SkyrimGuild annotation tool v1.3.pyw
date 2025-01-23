@@ -179,11 +179,34 @@ def process_annotations(animationFile):
                     for line in fileAnnotationsBuffer
                 ]
 
+        # ===== NEW SORTING LOGIC START =====
+        # Split annotations into comments, special entries, and animmotion lines
+        comments = []
+        special = []
+        animmotion_lines = []
+
+        for line in fileAnnotationsBuffer:
+            if line.startswith('#'):
+                comments.append(line)
+            elif 'animmotion' in line:
+                animmotion_lines.append(line)
+            else:
+                special.append(line)
+
+        # Sort both groups by their timestamp
+        special_sorted = sorted(special, key=lambda x: float(x.split()[0]))
+        animmotion_sorted = sorted(animmotion_lines, key=lambda x: float(x.split()[0]))
+
+        # Rebuild annotation buffer with proper order
+        fileAnnotationsBuffer = comments + special_sorted + animmotion_sorted
+        # ===== NEW SORTING LOGIC END =====
+
         update_files(animationFile, fileAnnotationsBuffer)
 
     except Exception as e:
         show_error(f"Failed processing annotations for {animationFile}", e)
         raise
+
 
 
 # Main execution
